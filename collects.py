@@ -66,17 +66,17 @@ def main():
             st.header("Post Analysis")
             df = analysis['df']
             
-            fig = px.histogram(df, x='likes', title='Distribution of Likes')
+            fig = px.histogram(df, x='likes', title='Distribution of Likes for Collected Posts')
             st.plotly_chart(fig)
             
-            st.subheader("Top 10 Most Liked Posts")
+            st.subheader("Top 10 Most Liked Posts Collected")
             st.dataframe(df.nlargest(10, 'likes')[['title', 'likes']])
             
-            st.subheader("Content Rating Distribution")
+            st.subheader("Content Rating Distribution for Collected Posts")
             st.bar_chart(df['content_rating'].value_counts())
             
             df['created_at'] = pd.to_datetime(df['created_at'])
-            fig = px.scatter(df, x='created_at', y='likes', title='Posts Timeline')
+            fig = px.scatter(df, x='created_at', y='likes', title='Creation time of Collected posts')
             st.plotly_chart(fig)
             
         else:
