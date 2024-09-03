@@ -3,9 +3,10 @@ import requests
 import json
 import pandas as pd
 import plotly.express as px
+from collections import Counter
 
 def fetch_data(user_id, offset=0, limit=500):
-    url = f"https://api.yodayo.com/v1/users/{user_id}/notes?offset={offset}&limit={limit}&width=100&include_nsfw=true"
+    url = f"https://api.yodayo.com/v1/users/{user_id}/notes?offset={offset}&limit={limit}&width=600&include_nsfw=true"
     response = requests.get(url)
     return response.json()
 
@@ -14,16 +15,16 @@ def analyze_data(data):
     
     total_posts = len(posts)
     total_likes = sum(post['likes'] for post in posts)
-    total_comments = sum(post['comments'] for post in posts)
-    total_collects = sum(post['collects'] for post in posts)
+    
+    names = [post['profile']['name'] for post in posts if 'profile' in post and 'name' in post['profile']]
+    name_counts = Counter(names)
     
     df = pd.DataFrame(posts)
     
     return {
         'total_posts': total_posts,
         'total_likes': total_likes,
-        'total_comments': total_comments,
-        'total_collects': total_collects,
+        'name_counts': name_counts,
         'df': df
     }
 
@@ -54,8 +55,13 @@ def main():
             st.header("Basic Statistics")
             st.write(f"Total Posts: {analysis['total_posts']}")
             st.write(f"Total Likes: {analysis['total_likes']}")
-            st.write(f"Total Comments: {analysis['total_comments']}")
-            st.write(f"Total Collects: {analysis['total_collects']}")
+            
+            st.subheader("Name Statistics")
+            name_df = pd.DataFrame.from_dict(analysis['name_counts'], orient='index', columns=['Count'])
+            name_df = name_df.sort_values('Count', ascending=False)
+            st.write(f"Total Unique Names: {len(name_df)}")
+            st.write("Top 10 Most Common Names:")
+            st.dataframe(name_df.head(10))
             
             st.header("Post Analysis")
             df = analysis['df']
@@ -64,7 +70,7 @@ def main():
             st.plotly_chart(fig)
             
             st.subheader("Top 10 Most Liked Posts")
-            st.dataframe(df.nlargest(10, 'likes')[['title', 'likes', 'comments', 'collects']])
+            st.dataframe(df.nlargest(10, 'likes')[['title', 'likes']])
             
             st.subheader("Content Rating Distribution")
             st.bar_chart(df['content_rating'].value_counts())
