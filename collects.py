@@ -29,7 +29,7 @@ def analyze_data(data):
     }
 
 def main():
-    st.title("Yodayo User Data Analyzer")
+    st.title("Yodayo Collected Post Analyzer")
     
     user_id = st.text_input("Enter User ID")
     
@@ -47,7 +47,7 @@ def main():
                 offset += len(posts)
         
         if all_data:
-            st.success(f"Data fetched successfully. Total posts: {len(all_data)}")
+            st.success(f"Data fetched successfully. Total collected posts: {len(all_data)}")
             
             combined_data = {'posts': all_data}
             analysis = analyze_data(combined_data)
@@ -59,9 +59,9 @@ def main():
             st.subheader("Name Statistics")
             name_df = pd.DataFrame.from_dict(analysis['name_counts'], orient='index', columns=['Count'])
             name_df = name_df.sort_values('Count', ascending=False)
-            st.write(f"Total Unique Names: {len(name_df)}")
-            st.write("Top 10 Most Common Names:")
-            st.dataframe(name_df.head(10))
+            st.write(f"Total Unique Users Collected From: {len(name_df)}")
+            st.write("№ of posts collected from each user:")
+            st.dataframe(name_df)
             
             st.header("Post Analysis")
             df = analysis['df']
