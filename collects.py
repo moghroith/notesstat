@@ -6,7 +6,7 @@ import plotly.express as px
 from collections import Counter
 
 def fetch_data(user_id, offset=0, limit=500):
-    url = f"https://api.yodayo.com/v1/users/{user_id}/notes?offset={offset}&limit={limit}&width=600&include_nsfw=true"
+    url = f"https://api.yodayo.com/v1/users/{user_id}/notes?offset={offset}&limit={limit}"
     response = requests.get(url)
     return response.json()
 
@@ -71,9 +71,6 @@ def main():
             
             st.subheader("Top 10 Most Liked Posts Collected")
             st.dataframe(df.nlargest(10, 'likes')[['title', 'likes']])
-            
-            st.subheader("Content Rating Distribution for Collected Posts")
-            st.bar_chart(df['content_rating'].value_counts())
             
             df['created_at'] = pd.to_datetime(df['created_at'])
             fig = px.scatter(df, x='created_at', y='likes', title='Creation time of Collected posts')
