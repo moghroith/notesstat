@@ -46,10 +46,13 @@ def main():
                 all_data.extend(posts)
                 offset += len(posts)
         
-        if all_data:
-            st.success(f"Data fetched successfully. Total collected posts: {len(all_data)}")
+        # Filter out duplicate posts by uuid
+        unique_posts = {post['uuid']: post for post in all_data}.values()
+        
+        if unique_posts:
+            st.success(f"Data fetched successfully. Total unique posts: {len(unique_posts)}")
             
-            combined_data = {'posts': all_data}
+            combined_data = {'posts': list(unique_posts)}
             analysis = analyze_data(combined_data)
             
             st.header("Basic Statistics")
