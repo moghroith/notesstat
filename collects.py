@@ -4,11 +4,36 @@ import json
 import pandas as pd
 import plotly.express as px
 from collections import Counter
+import logging
+import cloudscraper
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+
+def fetch_with_rate_limit(url, headers=None):
+    if headers is None:
+        headers = {}
+    
+    headers.update({
+        '_gorilla_csrf': 'your_csrf_token',
+        'access_token': 'your_access_token',
+        'cf_clearance': 'your_cf_clearance_token',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Referer': 'https://www.yodayo.com'  # Adjust this URL as needed
+    })
+    
+    scraper = cloudscraper.create_scraper()
+    response = scraper.get(url, headers=headers)
+    
+    if response.status_code == 200:
+        return response.json()
+    else:
+        logging.error(f"Failed to fetch data: {response.status_code}")
+        return None
 
 def fetch_data(user_id, offset=0, limit=500):
     url = f"https://api.yodayo.com/v1/users/{user_id}/notes?offset={offset}&limit={limit}"
-    response = requests.get(url)
-    return response.json()
+    return fetch_with_rate_limit(url)
 
 def analyze_data(data):
     posts = data.get('posts', [])
@@ -40,11 +65,15 @@ def main():
         with st.spinner("Fetching data..."):
             while True:
                 data = fetch_data(user_id, offset)
+                if data is None:
+                    st.error("Failed to fetch data. Please check your authentication details and try again.")
+                    return
                 posts = data.get('posts', [])
                 if not posts:
                     break
                 all_data.extend(posts)
                 offset += len(posts)
+                st.text(f"Fetched {len(all_data)} posts so far...")
         
         # Filter out duplicate posts by uuid
         unique_posts = {post['uuid']: post for post in all_data}.values()
